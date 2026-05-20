@@ -28,13 +28,19 @@ function NavigationGuard() {
   useEffect(() => {
     if (isAuthenticated === null) return; // still loading
 
-    const inTabsGroup = segments[0] === '(tabs)';
+    // Only the login screen is the "public" area. Every other route
+    // (the tabs AND nested screens like /lists/[id]) is authenticated.
+    const onLoginScreen = segments[0] === 'login';
 
-    if (!isAuthenticated && inTabsGroup) {
+    if (!isAuthenticated && !onLoginScreen) {
+      // Unauthenticated users get sent to login from anywhere else.
       router.replace(LOGIN_ROUTE);
-    } else if (isAuthenticated && !inTabsGroup) {
+    } else if (isAuthenticated && onLoginScreen) {
+      // Authenticated users should not sit on the login screen.
       router.replace(TABS_ROUTE);
     }
+    // Authenticated users on any other route (tabs, /lists/[id], modal)
+    // are left alone — this is what allows navigation into list detail.
   }, [isAuthenticated, segments]);
 
   return null;

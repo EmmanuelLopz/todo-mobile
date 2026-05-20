@@ -1,50 +1,22 @@
 import { useEffect, useState } from "react";
-import { FlatList, Pressable, RefreshControl } from "react-native";
+import { FlatList, Pressable, RefreshControl, TouchableOpacity } from "react-native";
 
 import TaskListCard from "@/components/TaskListCard/TaskListCard";
 import { Box } from "@/components/ui/box";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
+import { useAuth } from "@/context/AuthContext";
+import { logout } from "@/services/authService";
+import { getLists } from "@/services/tasks/getLists";
 import { TaskList } from "@/types/TaskList";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const API_BASE_URL = "http://localhost:8080";
-
-const COLOR_MAP: Record<number, string> = {
-  1: "bg-blue-500",
-  2: "bg-green-500",
-  3: "bg-purple-500",
-  4: "bg-red-500",
-  5: "bg-yellow-500",
-};
-
-const mapToTaskList = (item: any): TaskList => ({
-  id: String(item.id),
-  title: item.title,
-  subtitle: item.description ?? "",
-  percentage:
-    item.totalTodos > 0
-      ? Math.round((item.completedTodos / item.totalTodos) * 100)
-      : 0,
-  tags: [],
-  idColor: COLOR_MAP[item.colorId] ?? "bg-blue-500",
-  idIcon: "list",
-});
-
 export default function HomeScreen() {
+  const { setIsAuthenticated } = useAuth();
   const [lists, setLists] = useState<TaskList[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const fetchTaskLists = async (): Promise<TaskList[]> => {
-    const response = await fetch(`${API_BASE_URL}/lists`);
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
-    }
-    const data = await response.json();
-    return data.map(mapToTaskList);
-  };
 
   const loadLists = async (fromRefresh: boolean = false) => {
     try {
@@ -52,13 +24,13 @@ export default function HomeScreen() {
       if (fromRefresh) {
         setLoading(true);
       }
-      const data = await fetchTaskLists();
+      const data = await getLists();
       setLists(data);
       if (fromRefresh) {
         setLoading(false);
       }
-    } catch (err) {
-      setError("Something went wrong");
+    } catch (err: any) {
+      setError(err?.message ?? "Something went wrong");
       setLists([]);
     }
   };
@@ -71,8 +43,8 @@ export default function HomeScreen() {
     };
 
     init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); {/* Se pone arreglo vacío para que se ejecute una sola vez */}
+  
+  }, []); 
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -80,10 +52,29 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
+  const handleLogout = async () => {
+    await logout();
+    setIsAuthenticated(false);
+  };
+
   return (
     <SafeAreaView className="flex-1">
       <Box className="flex-1 p-4">
-        <Text className="text-2xl mb-4">Task Lists</Text>
+
+        <Box className="flex-row justify-between items-center mb-4">
+          <Text className="text-2xl font-bold">Task Lists</Text>
+          <TouchableOpacity
+            onPress={handleLogout}
+            style={{
+              backgroundColor: '#BA1A1A',
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderRadius: 8,
+            }}
+          >
+            <Text className="text-white font-bold text-sm">Logout</Text>
+          </TouchableOpacity>
+        </Box>
 
         {/* Loading */}
         {loading && (
