@@ -6,83 +6,56 @@ import { TaskItem } from "@/components/TaskItem/TaskItem";
 import { Box } from "@/components/ui/box";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
-import { FlatList } from "react-native";
-
-type Task = {
-  id: string;
-  title: string;
-  description: string;
-  completed: boolean;
-};
+import { getTasksByListId } from "@/services/tasks/getTasksByListId";
+import { Task } from "@/types/Task";
+import { FlatList, Pressable } from "react-native";
 
 type Params = {
   id: string;
   title: string;
 };
 
-const MOCK_TASKS: Task[] = [
-  {
-    id: "1",
-    title: "Setup React Native Environment",
-    description: "Install Node.js, Watchman, and Java SDK.",
-    completed: false,
-  },
-  {
-    id: "2",
-    title: "Bridge Architecture Analysis",
-    description: "Read chapter 4 on JS Thread communication.",
-    completed: false,
-  },
-  {
-    id: "3",
-    title: "Binary Search Tree Implementation",
-    description: "Complete the recursive insertion method.",
-    completed: true,
-  },
-  {
-    id: "4",
-    title: "Native Modules Presentation",
-    description: "Prepare slides for Android-JS communication.",
-    completed: false,
-  },
-];
-
 export default function TasksScreen() {
+  // `id` is the listId (a UUID) passed in by TaskListCard when a list
+  // is tapped on the index screen.
   const { id, title } = useLocalSearchParams<Params>();
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchTasks = async (): Promise<Task[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(MOCK_TASKS), 1000);
-    });
+  const loadTasks = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+      const data = await getTasksByListId(id);
+      setTasks(data);
+    } catch (err: any) {
+      setError(err?.message ?? "Something went wrong");
+      setTasks([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleToggle = (id: string) => {
+  const handleToggle = (taskId: string) => {
     // esto solo es front
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task,
+        task.id === taskId ? { ...task, completed: !task.completed } : task,
       ),
     );
     // aquí iría la llamada a la API para actualizar el estado del task en el backend
   };
 
-  const handleMenu = (id: string) => {
-    console.log("Open menu for task:", id);
+  const handleMenu = (taskId: string) => {
+    console.log("Open menu for task:", taskId);
   };
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      const data = await fetchTasks();
-      setTasks(data);
-      setLoading(false);
-    };
-
-    load();
-  }, []);
+    loadTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const completedCount = tasks.filter((t) => t.completed).length;
   const percentage =
@@ -134,11 +107,22 @@ export default function TasksScreen() {
         {loading && <Spinner size="large" color="grey" />}
 
         {/* ERROR */}
+        {!loading && error && (
+          <>
+            <Text className="text-red-500 mb-2">{error}</Text>
+            <Pressable onPress={loadTasks}>
+              <Text className="text-blue-500 underline">Retry</Text>
+            </Pressable>
+          </>
+        )}
 
         {/* EMPTY STATE */}
+        {!loading && !error && tasks.length === 0 && (
+          <Text>No tasks in this list yet</Text>
+        )}
 
         {/* LIST */}
-        {!loading && (
+        {!loading && !error && (
           <FlatList
             data={tasks}
             keyExtractor={(item) => item.id}

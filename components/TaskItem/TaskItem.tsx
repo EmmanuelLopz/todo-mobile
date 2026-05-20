@@ -1,13 +1,7 @@
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
+import { Task } from "@/types/Task";
 import { Pressable } from "react-native";
-
-type Task = {
-  id: string;
-  title: string;
-  description: string;
-  completed: boolean;
-};
 
 type Props = {
   task: Task;
