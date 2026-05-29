@@ -3,37 +3,36 @@ import { TaskList } from '@/types/TaskList';
 import { normalizeUuid } from '@/utils/uuid';
 
 // Raw shape returned by the Quarkus backend at GET /lists.
-// Mirrors the `List` entity (plus optional aggregate fields the backend
-// exposes for the UI). Anything that may be missing is marked optional
-// so the mapper stays defensive.
+// The backend now returns hexValue and colorName flat on the root object
+// (no nested `color` wrapper). colorId is a UUID string.
 export interface ListResponse {
-  id: number;
+  id: string;
   title: string;
   description?: string;
-  userId?: number;
-  colorId?: number;
-  color?: {
-    id: number;
-    name: string;
-    hexValue: string;
-  };
+  userId?: string;
+  colorId?: string;
+  colorName?: string;
+  /** Hex color without the leading '#', e.g. "A855F7". */
+  hexValue?: string;
   totalTodos?: number;
   completedTodos?: number;
+  active?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Fallback Tailwind classes used when the backend doesn't return a color
-// or returns an unknown color id. Keeps the UI consistent with the
-// already-defined TaskListCard structure.
-const COLOR_MAP: Record<number, string> = {
-  1: 'bg-blue-500',
-  2: 'bg-green-500',
-  3: 'bg-purple-500',
-  4: 'bg-red-500',
-  5: 'bg-yellow-500',
-};
-
-const DEFAULT_COLOR = 'bg-blue-500';
+const DEFAULT_COLOR = '#3b82f6'; // blue-500
 const DEFAULT_ICON = 'list';
+
+// Resolve the hex color for a list item.
+// The DB stores hexValue without the leading '#', so we prepend it when needed.
+const resolveColor = (item: ListResponse): string => {
+  if (item.hexValue) {
+    const hex = item.hexValue.trim();
+    return hex.startsWith('#') ? hex : `#${hex}`;
+  }
+  return DEFAULT_COLOR;
+};
 
 // Convert a backend `ListResponse` into the `TaskList` shape consumed
 // by `TaskListCard`. Percentage is derived from completed/total todos
@@ -42,6 +41,7 @@ const mapToTaskList = (item: ListResponse): TaskList => {
   const total = item.totalTodos ?? 0;
   const completed = item.completedTodos ?? 0;
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const color = resolveColor(item);
 
   return {
     // The backend id is a BINARY(16) UUID. Normalize it so navigation
@@ -51,7 +51,8 @@ const mapToTaskList = (item: ListResponse): TaskList => {
     subtitle: item.description ?? '',
     percentage,
     tags: [],
-    idColor: COLOR_MAP[item.colorId ?? -1] ?? DEFAULT_COLOR,
+    idColor: color, // kept for backward-compat; now also a hex string
+    color,
     idIcon: DEFAULT_ICON,
   };
 };

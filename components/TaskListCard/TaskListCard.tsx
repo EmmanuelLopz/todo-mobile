@@ -17,6 +17,8 @@ const TaskListCard: React.FC<{ item: TaskList }> = ({ item }) => {
       params: {
         id: item.id,
         title: item.title,
+        description: item.subtitle,
+        color: item.color,
       },
     });
   };
@@ -26,22 +28,31 @@ const TaskListCard: React.FC<{ item: TaskList }> = ({ item }) => {
   // render
   return (
     <Pressable
-      className="p-4 border border-gray-300 rounded-xl mb-3"
+      className="flex-row border border-gray-300 rounded-xl mb-3 overflow-hidden"
       onPress={handlePress}
     >
-      {/* Title */}
-      <Text className="text-lg font-semibold">{item.title}</Text>
+      {/* Barra lateral completa — color driven by the list's color from the backend */}
+      <Box style={{ width: 8, backgroundColor: item.color }} />
 
-      {/* Subtitle */}
-      <Text className="text-sm text-gray-500 mb-2">{item.subtitle}</Text>
-
-      <Box className="mb-3">
-        <Progress value={item.percentage} size="md">
-          <ProgressFilledTrack />
-        </Progress>
-        <Text className="text-xs text-gray-500 mt-1">
-          {item.percentage}% complete
+      {/* Contenido */}
+      <Box className="flex-1 p-4">
+        <Text className="text-lg font-semibold mb-1">
+          {item.title}
         </Text>
+
+        <Text className="text-sm text-gray-500 mb-2">
+          {item.subtitle}
+        </Text>
+
+        <Box className="mb-3">
+          <Progress value={item.percentage} size="md">
+            <ProgressFilledTrack style={{ backgroundColor: item.color }} />
+          </Progress>
+
+          <Text className="text-xs text-gray-500 mt-1">
+            {item.percentage}% complete
+          </Text>
+        </Box>
       </Box>
     </Pressable>
   );

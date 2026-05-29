@@ -24,7 +24,8 @@ const mapToTask = (item: TodoResponse): Task => ({
   id: String(item.id),
   title: item.title,
   description: item.description ?? '',
-  completed: item.status === true || item.status === 1,
+  // Handle status as: boolean true, number 1, or string "1"
+  completed: item.status === true || item.status === 1 || item.status === "1",
 });
 
 // GET /tasks/{listId} — returns every task that belongs to the given
