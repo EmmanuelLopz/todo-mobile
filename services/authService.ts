@@ -81,3 +81,18 @@ export const login = async (email: string, password: string) => {
 export const logout = async () => {
   await removeToken();
 };
+
+// Decode the stored Firebase idToken (a JWT) and return the user's uid.
+// Firebase puts the uid in both `sub` and the custom `user_id` claim.
+export const getUserIdFromToken = async (): Promise<string | null> => {
+  const token = await getToken();
+  if (!token) return null;
+  try {
+    const payloadBase64 = token.split('.')[1];
+    // atob is available on React Native's Hermes and on web.
+    const decoded = JSON.parse(atob(payloadBase64));
+    return (decoded.user_id as string) || (decoded.sub as string) || null;
+  } catch {
+    return null;
+  }
+};

@@ -75,6 +75,10 @@ function RootStack() {
         name="modal"
         options={{ presentation: "modal", title: "Modal" }}
       />
+      <Stack.Screen
+        name="create-list"
+        options={{ presentation: "modal", title: "New List" }}
+      />
     </Stack>
   );
 }

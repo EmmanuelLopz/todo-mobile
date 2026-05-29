@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
-import { FlatList, Pressable, RefreshControl, TouchableOpacity } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { FlatList, Pressable, RefreshControl } from "react-native";
 
+import Button from "@/components/Button/Button";
+import NewTaskButton from "@/components/NewTaskButton/NewTaskButton";
 import TaskListCard from "@/components/TaskListCard/TaskListCard";
 import { Box } from "@/components/ui/box";
 import { Spinner } from "@/components/ui/spinner";
@@ -13,6 +16,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const { setIsAuthenticated } = useAuth();
+  const router = useRouter();
+
   const [lists, setLists] = useState<TaskList[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -35,16 +40,16 @@ export default function HomeScreen() {
     }
   };
 
-  useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      await loadLists();
-      setLoading(false);
-    };
-
-    init();
-  
-  }, []); 
+  useFocusEffect(
+    useCallback(() => {
+      const init = async () => {
+        setLoading(true);
+        await loadLists();
+        setLoading(false);
+      };
+      init();
+    }, [])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -63,17 +68,7 @@ export default function HomeScreen() {
 
         <Box className="flex-row justify-between items-center mb-4">
           <Text className="text-2xl font-bold">Task Lists</Text>
-          <TouchableOpacity
-            onPress={handleLogout}
-            style={{
-              backgroundColor: '#BA1A1A',
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              borderRadius: 8,
-            }}
-          >
-            <Text className="text-white font-bold text-sm">Logout</Text>
-          </TouchableOpacity>
+          <Button label="Logout" onPress={handleLogout} variant="danger" />
         </Box>
 
         {/* Loading */}
@@ -109,6 +104,9 @@ export default function HomeScreen() {
             }
           />
         )}
+
+        {/* FAB */}
+        <NewTaskButton onPress={() => router.push("/create-list")} />
       </Box>
     </SafeAreaView>
   );
