@@ -5,8 +5,10 @@ export interface UpdateTaskRequest {
   status?: boolean;
   title?: string;
   description?: string;
-  dueDate?: string;
-  priorityId?: string;
+  // null allows the edit form to explicitly clear a previously set
+  // due date or priority.
+  dueDate?: string | null;
+  priorityId?: string | null;
 }
 
 /**

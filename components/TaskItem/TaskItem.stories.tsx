@@ -10,7 +10,7 @@ const InteractiveWrapper = (args: React.ComponentProps<typeof TaskItem>) => {
     args.onToggle(task.id);
   };
 
-  return <TaskItem task={task} onToggle={handleToggle} onMenu={args.onMenu} />;
+  return <TaskItem task={task} onToggle={handleToggle} onDeleted={args.onDeleted} />;
 };
 
 const meta: Meta<typeof TaskItem> = {
@@ -18,8 +18,8 @@ const meta: Meta<typeof TaskItem> = {
   component: TaskItem,
   tags: ["autodocs"],
   args: {
-    onToggle: () => {},  // 👈 sin @storybook/test
-    onMenu: () => {},    // 👈 sin @storybook/test
+    onToggle: () => {},   // 👈 sin @storybook/test
+    onDeleted: () => {},  // 👈 sin @storybook/test
   },
   argTypes: {
     task: { control: "object" },

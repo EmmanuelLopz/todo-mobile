@@ -6,6 +6,12 @@ export type Task = {
   title: string;
   description: string;
   completed: boolean;
+  priorityName?: string | null;
+  // Optional details carried through from getTasksByListId so the
+  // three-dot "Modify task" action can prefill the edit screen without
+  // an extra request. Absent for tasks loaded by older code paths.
+  dueDate?: string | null;
+  priorityId?: string | null;
 };
 
 // Detailed view of a single task, returned by GET /tasks/{taskId}.

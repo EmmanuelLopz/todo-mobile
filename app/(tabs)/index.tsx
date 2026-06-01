@@ -62,12 +62,16 @@ export default function HomeScreen() {
     setIsAuthenticated(false);
   };
 
+  const handleListDeleted = (id: string) => {
+    setLists((prev) => prev.filter((l) => l.id !== id));
+  };
+
   return (
     <SafeAreaView className="flex-1">
       <Box className="flex-1 p-4">
 
         <Box className="flex-row justify-between items-center mb-4">
-          <Text className="text-2xl font-bold">Task Lists</Text>
+          <Text className="text-2xl font-bold">Listas de tareas</Text>
           <Button label="Logout" onPress={handleLogout} variant="danger" />
         </Box>
 
@@ -98,7 +102,7 @@ export default function HomeScreen() {
           <FlatList
             data={lists}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <TaskListCard item={item} />}
+            renderItem={({ item }) => <TaskListCard item={item} onDelete={handleListDeleted} />}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
