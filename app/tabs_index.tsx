@@ -9,35 +9,6 @@ import { useEffect, useState } from "react";
 import { FlatList, Pressable, RefreshControl, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const MOCK_TASK_LISTS: TaskList[] = [
-  {
-    id: "1",
-    title: "Computer Science",
-    subtitle: "Algorithms and data structures",
-    percentage: 60,
-    tags: ["school", "important"],
-    idColor: "bg-blue-500",
-    idIcon: "code",
-  },
-  {
-    id: "2",
-    title: "History",
-    subtitle: "World War II notes",
-    percentage: 30,
-    tags: ["reading"],
-    idColor: "bg-green-500",
-    idIcon: "menu-book",
-  },
-  {
-    id: "3",
-    title: "Math",
-    subtitle: "Calculus exercises",
-    percentage: 90,
-    tags: ["practice", "exam"],
-    idColor: "bg-purple-500",
-    idIcon: "functions",
-  },
-];
 
 export default function HomeScreen() {
   const { setIsAuthenticated } = useAuth();
@@ -53,7 +24,7 @@ export default function HomeScreen() {
         if (shouldFail) {
           reject(new Error("Failed to fetch lists"));
         } else {
-          resolve(MOCK_TASK_LISTS);
+          resolve([]);
         }
       }, 1000);
     });

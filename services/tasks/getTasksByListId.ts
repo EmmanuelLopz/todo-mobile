@@ -9,14 +9,16 @@ export interface TodoResponse {
   id: string | number;
   title: string;
   description?: string;
-  // `status` is a TINYINT(1) in the database, so it can arrive as
-  // 0/1 or as a boolean depending on the serializer.
+  // `completed` is the primary boolean field returned by the GET endpoint.
+  completed?: boolean;
+  // `status` is a TINYINT(1) fallback (0/1 or boolean) from some serializers.
   status?: number | boolean;
   dueDate?: string;
   createdAt?: string;
   updatedAt?: string;
   listId?: string;
   priorityId?: number;
+  priorityName?: string | null;
 }
 
 // Convert a backend `Todo` into the `Task` shape used by the UI.
@@ -24,8 +26,18 @@ const mapToTask = (item: TodoResponse): Task => ({
   id: String(item.id),
   title: item.title,
   description: item.description ?? '',
-  // Handle status as: boolean true, number 1, or string "1"
-  completed: item.status === true || item.status === 1 || item.status === "1",
+  // Prefer the explicit `completed` boolean the GET endpoint returns.
+  // Fall back to the legacy `status` field (TINYINT 0/1) if absent.
+  completed:
+    item.completed === true ||
+    item.status === true ||
+    item.status === 1 ||
+    item.status === "1",
+  priorityName: item.priorityName ?? null,
+  // Carry these through so the "Modify task" action can prefill the
+  // edit screen. Normalize ids to strings; keep dueDate as-is.
+  dueDate: item.dueDate ?? null,
+  priorityId: item.priorityId != null ? String(item.priorityId) : null,
 });
 
 // GET /tasks/{listId} — returns every task that belongs to the given

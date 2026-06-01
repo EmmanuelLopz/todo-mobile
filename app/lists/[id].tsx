@@ -1,16 +1,16 @@
 import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
-import { Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useCallback, useState } from "react";
 
+import CreateNewTaskCard from "@/components/CreateNewTaskCard/CreateNewTaskCard";
 import { TaskItem } from "@/components/TaskItem/TaskItem";
 import { Box } from "@/components/ui/box";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
-import { createTask } from "@/services/tasks/createTask";
 import { getTasksByListId } from "@/services/tasks/getTasksByListId";
 import { updateTask } from "@/services/tasks/updateTask";
 import { Task } from "@/types/Task";
-import { FlatList, Pressable, TextInput, TouchableOpacity } from "react-native";
+import { Pressable, SectionList } from "react-native";
 
 type Params = {
   id: string;
@@ -26,11 +26,7 @@ export default function TasksScreen() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [creatingTask, setCreatingTask] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskDescription, setNewTaskDescription] = useState("");
 
   const loadTasks = async () => {
     try {
@@ -43,38 +39,6 @@ export default function TasksScreen() {
       setTasks([]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleCreateTask = async () => {
-    if (!newTaskTitle.trim()) {
-      setError("Task title must not be blank");
-      return;
-    }
-
-    try {
-      setCreatingTask(true);
-      setError(null);
-
-      await createTask({
-        title: newTaskTitle.trim(),
-        description: newTaskDescription.trim(),
-        listId: id,
-      });
-
-      setNewTaskTitle("");
-      setNewTaskDescription("");
-
-      await loadTasks();
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.message ??
-        err?.response?.data ??
-        err?.message ??
-        "Could not create task"
-      );
-    } finally {
-      setCreatingTask(false);
     }
   };
 
@@ -108,18 +72,34 @@ export default function TasksScreen() {
     }
   };
 
-  const handleMenu = (taskId: string) => {
-    console.log("Open menu for task:", taskId);
+  const handleDeleted = (taskId: string) => {
+    // Remove the deleted task locally for an instant update.
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
   };
 
-  useEffect(() => {
-    loadTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  // Load on mount and reload whenever this screen regains focus (e.g.
+  // returning from the Edit Task screen) so edits show up immediately.
+  useFocusEffect(
+    useCallback(() => {
+      loadTasks();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id]),
+  );
 
-  const completedCount = tasks.filter((t) => t.completed).length;
+  const pendingTasks = tasks.filter((t) => !t.completed);
+  const completedTasks = tasks.filter((t) => t.completed);
+  const completedCount = completedTasks.length;
   const percentage =
     tasks.length === 0 ? 0 : Math.round((completedCount / tasks.length) * 100);
+
+  const sections = [
+    ...(pendingTasks.length > 0
+      ? [{ title: "ONGOING", data: pendingTasks }]
+      : []),
+    ...(completedTasks.length > 0
+      ? [{ title: "COMPLETED", data: completedTasks }]
+      : []),
+  ];
 
   return (
     <>
@@ -155,15 +135,14 @@ export default function TasksScreen() {
           </Text>
         </Box>
 
-        {/* SECTION HEADER */}
+        {/* SUMMARY ROW */}
         <Box className="flex-row justify-between items-center mb-3">
           <Text className="text-sm font-semibold text-gray-600">
-            ONGOING TASKS
+            TASKS
           </Text>
-
           <Box className="bg-gray-200 px-3 py-1 rounded-full">
             <Text className="text-xs">
-              {tasks.length - completedCount} Items Remaining
+              {pendingTasks.length} Remaining · {completedCount} Done
             </Text>
           </Box>
         </Box>
@@ -183,79 +162,52 @@ export default function TasksScreen() {
 
         {/* EMPTY STATE */}
         {!loading && !error && tasks.length === 0 && (
-          <Text>No tasks in this list yet</Text>
+          <Text className="text-gray-400 mb-4">No tasks in this list yet</Text>
         )}
 
-        {/* LIST */}
+        {/* SECTIONED LIST */}
         {!loading && !error && (
-          <FlatList
-            data={tasks}
+          <SectionList
+            sections={sections}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <TaskItem
                 task={item}
                 onToggle={handleToggle}
-                onMenu={handleMenu}
+                onDeleted={handleDeleted}
               />
             )}
-            ListFooterComponent={
-              <Box className="mt-6 mb-8 p-4 rounded-xl border border-gray-200 bg-white">
-                <Text className="text-xl font-bold mb-2">Create new task</Text>
-
-                <Text className="text-gray-500 mb-4">
-                  Add a new task to this active list.
-                </Text>
-
-                <Text className="font-semibold mb-1">Title</Text>
-                <TextInput
-                  value={newTaskTitle}
-                  onChangeText={setNewTaskTitle}
-                  placeholder="Example: Crear DTOs"
-                  maxLength={100}
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#D1D5DB",
-                    borderRadius: 8,
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    marginBottom: 12,
-                  }}
-                />
-
-                <Text className="font-semibold mb-1">Description</Text>
-                <TextInput
-                  value={newTaskDescription}
-                  onChangeText={setNewTaskDescription}
-                  placeholder="Example: Crear request y response DTOs para tasks"
-                  maxLength={300}
-                  multiline
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#D1D5DB",
-                    borderRadius: 8,
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    minHeight: 80,
-                    textAlignVertical: "top",
-                    marginBottom: 16,
-                  }}
-                />
-
-                <TouchableOpacity
-                  onPress={handleCreateTask}
-                  disabled={creatingTask}
-                  style={{
-                    backgroundColor: creatingTask ? "#9CA3AF" : "#2563EB",
-                    paddingVertical: 12,
-                    borderRadius: 8,
-                    alignItems: "center",
-                  }}
+            renderSectionHeader={({ section }) => (
+              <Box
+                className={`flex-row items-center gap-2 mb-2 mt-4 ${
+                  section.title === "COMPLETED" ? "mt-6" : ""
+                }`}
+              >
+                {section.title === "COMPLETED" && (
+                  <Box className="flex-1 h-px bg-gray-200" />
+                )}
+                <Text
+                  className={`text-xs font-bold tracking-widest ${
+                    section.title === "COMPLETED"
+                      ? "text-green-600"
+                      : "text-gray-500"
+                  }`}
                 >
-                  <Text className="text-white font-bold">
-                    {creatingTask ? "Creating..." : "Create task"}
-                  </Text>
-                </TouchableOpacity>
+                  {section.title === "COMPLETED"
+                    ? `✓ COMPLETED (${completedCount})`
+                    : `ONGOING (${pendingTasks.length})`}
+                </Text>
+                {section.title === "COMPLETED" && (
+                  <Box className="flex-1 h-px bg-gray-200" />
+                )}
               </Box>
+            )}
+            ListFooterComponent={
+              <CreateNewTaskCard
+                listId={id}
+                onTaskCreated={loadTasks}
+                onError={(msg) => setError(msg || null)}
+              />
             }
           />
         )}
