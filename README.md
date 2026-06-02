@@ -1,50 +1,96 @@
-# Welcome to your Expo app 👋
+# Todo Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación móvil de lista de tareas desarrollada con React Native y Expo. Permite a los usuarios autenticarse con Firebase, gestionar listas de tareas y crear/consultar tareas con prioridades, fechas de vencimiento y colores personalizados.
 
-## Get started
+## Tecnologías utilizadas
 
-1. Install dependencies
+- **React Native** con **Expo** (~54)
+- **Expo Router** — navegación basada en sistema de archivos
+- **TypeScript**
+- **NativeWind** (Tailwind CSS para React Native)
+- **Firebase** — autenticación de usuarios
+- **Axios** — consumo de la API REST (backend en Java Quarkus)
+- **AsyncStorage / SecureStore** — persistencia local del token
+- **Yarn** — gestor de paquetes
 
-   ```bash
-   npm install
-   ```
+## Requisitos previos
 
-2. Start the app
+- Node.js >= 18
+- Yarn (`npm install -g yarn`)
+- Expo Go instalado en el dispositivo o un emulador configurado
 
-   ```bash
-   npx expo start
-   ```
+## Instalación y ejecución
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### 1. Clonar el repositorio
 
 ```bash
-npm run reset-project
+git clone <url-del-repositorio>
+cd todo-mobile
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Instalar dependencias
 
-## Learn more
+```bash
+yarn install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### 3. Configurar variables de entorno
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Coloca el archivo `.env` (proporcionado por separado) en la raíz del proyecto. El archivo debe quedar así:
 
-## Join the community
+```
+todo-mobile/
+├── .env          ← aquí
+├── app/
+├── package.json
+└── ...
+```
 
-Join our community of developers creating universal apps.
+### 4. Iniciar la aplicación
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+yarn start
+```
+
+Escanea el QR con la app **Expo Go** en tu dispositivo (iOS o Android), o presiona en la terminal:
+
+- `a` → emulador Android
+- `i` → simulador iOS
+
+## Variables de entorno necesarias
+
+El archivo `.env` debe contener las siguientes claves:
+
+```env
+EXPO_PUBLIC_FIREBASE_API_KEY=
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+EXPO_PUBLIC_FIREBASE_APP_ID=
+EXPO_PUBLIC_API_URL=
+```
+
+> El archivo `.env` está excluido del repositorio por seguridad. Solicitarlo al equipo de desarrollo.
+
+## Links deployados
+
+> Link de deploy de backend en google cloud: https://todo-backend-763487457914.us-central1.run.app
+
+## Usuario de prueba
+
+| Campo      | Valor              |
+|------------|--------------------|
+| Correo     | emmanuel@gmail.com |
+| Contraseña | 1234e5678          |
+
+## Endpoints del backend consumidos
+
+| Método | Ruta        | Descripción                           |
+|--------|-------------|---------------------------------------|
+| POST   | /auth/login | Autenticación con token de Firebase   |
+| GET    | /lists      | Obtener todas las listas del usuario  |
+| POST   | /lists      | Crear una nueva lista                 |
+| GET    | /tasks      | Obtener tareas por `listId`           |
+| GET    | /tasks/{id} | Obtener una tarea específica por ID   |
+| POST   | /tasks      | Crear una nueva tarea                 |
