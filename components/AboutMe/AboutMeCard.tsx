@@ -1,23 +1,34 @@
 import React from "react";
-import { Image } from "react-native";
 import { Box } from "../ui/box";
 import { Text } from "../ui/text";
+import InfoTile from "./InfoTile";
+import ProfileCard from "./ProfileCard";
 
 const AboutMeCard = () => {
   return (
-    <Box className="w-full rounded-2xl bg-white px-8 py-8 flex-row items-center">
-      <Image
-        source={require("@/assets/avatar.png")}
-        className="w-[24px] h-[24px] rounded-full"
-      />
+    <Box className="mx-4 mt-4 gap-3">
+      {/* Profile header */}
+      <ProfileCard />
 
-      <Box className="ml-8">
-        <Text className="text-blue-700 text-lg font-bold tracking-[6px] uppercase">
-          Architect
-        </Text>
+      {/* Info tiles row */}
+      <Box className="flex-row gap-3">
+        <InfoTile
+          icon="hardware-chip-outline"
+          label="CS Interest"
+          value="Distributed Systems"
+        />
+        <InfoTile
+          icon="color-palette-outline"
+          label="Hobbies"
+          value="Frontend development"
+        />
+      </Box>
 
-        <Text className="text-[#2d2f3a] text-3xl font-bold mt-2">
-          Alex Riveira
+      {/* Quote */}
+      <Box className="bg-white rounded-2xl px-5 py-4">
+        <Text className="text-gray-600 text-base leading-6 italic">
+          "Dedicated to bridging the gap between high-fidelity design systems
+          and functional code architecture."
         </Text>
       </Box>
     </Box>

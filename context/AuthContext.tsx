@@ -1,4 +1,5 @@
 import { getToken } from '@/services/authService';
+import { setLogoutHandler } from '@/services/api';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
@@ -21,6 +22,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(!!token);
     };
     checkToken();
+
+    // When the api interceptor can't refresh the token, mark the user as
+    // logged out — the route guard will redirect to the login screen.
+    setLogoutHandler(() => setIsAuthenticated(false));
   }, []);
 
   return (
