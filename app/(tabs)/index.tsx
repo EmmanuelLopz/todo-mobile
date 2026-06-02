@@ -9,7 +9,7 @@ import { Box } from "@/components/ui/box";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
 import { useAuth } from "@/context/AuthContext";
-import { logout } from "@/services/authService";
+import { logoutFromServer } from "@/services/authService";
 import { getLists } from "@/services/tasks/getLists";
 import { TaskList } from "@/types/TaskList";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -58,7 +58,7 @@ export default function HomeScreen() {
   };
 
   const handleLogout = async () => {
-    await logout();
+    await logoutFromServer();
     setIsAuthenticated(false);
   };
 

@@ -130,7 +130,7 @@ export default function TasksScreen() {
             <ProgressFilledTrack />
           </Progress>
 
-          <Text className="text-white text-xs mt-2">
+          <Text className="text-black text-xs mt-2">
             {percentage}% completed
           </Text>
         </Box>
